@@ -6,6 +6,7 @@ import { Rect } from "../Rect";
 import { IDraggable } from "./IDraggable";
 import { IDropTarget } from "./IDropTarget";
 import { IJsonTabSetNode } from "./IJsonModel";
+import { LayoutPopup } from './LayoutPopup';
 import { LayoutWindow } from "./LayoutWindow";
 import { Model } from "./Model";
 import { Node } from "./Node";
@@ -13,7 +14,7 @@ import { TabNode } from "./TabNode";
 export declare class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
     /** @internal */
-    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow): TabSetNode;
+    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow | LayoutPopup): TabSetNode;
     /** @internal */
     private static attributeDefinitions;
     /** @internal */

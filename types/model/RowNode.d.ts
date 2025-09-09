@@ -8,10 +8,11 @@ import { IJsonRowNode } from "./IJsonModel";
 import { Model } from "./Model";
 import { Node } from "./Node";
 import { LayoutWindow } from "./LayoutWindow";
+import { LayoutPopup } from './LayoutPopup';
 export declare class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
     /** @internal */
-    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow): RowNode;
+    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow | LayoutPopup): RowNode;
     /** @internal */
     private static attributeDefinitions;
     /** @internal */

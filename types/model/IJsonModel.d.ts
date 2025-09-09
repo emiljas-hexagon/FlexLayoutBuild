@@ -6,6 +6,7 @@ export interface IJsonModel {
     borders?: IJsonBorderNode[];
     layout: IJsonRowNode;
     popouts?: Record<string, IJsonPopout>;
+    popups?: Record<string, IJsonPopup>;
 }
 export interface IJsonRect {
     x: number;
@@ -14,6 +15,10 @@ export interface IJsonRect {
     height: number;
 }
 export interface IJsonPopout {
+    layout: IJsonRowNode;
+    rect: IJsonRect;
+}
+export interface IJsonPopup {
     layout: IJsonRowNode;
     rect: IJsonRect;
 }

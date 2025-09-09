@@ -217,6 +217,7 @@ export declare class LayoutInternal extends React.Component<ILayoutInternalProps
     setDragNode: (event: DragEvent, node: Node & IDraggable) => void;
     setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number): void;
     setDraggingOverWindow(overWindow: boolean): void;
+    isPopup(): boolean;
     onDragEnterRaw: (event: React.DragEvent<HTMLElement>) => void;
     onDragLeaveRaw: (event: React.DragEvent<HTMLElement>) => void;
     clearDragMain(): void;
@@ -259,6 +260,7 @@ export interface ITabRenderValues {
 }
 export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    pin?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
