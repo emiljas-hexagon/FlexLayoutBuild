@@ -252,7 +252,7 @@ __publicField(_DockLocation, "CENTER", new _DockLocation("center", Orientation.V
 let DockLocation = _DockLocation;
 var I18nLabel = /* @__PURE__ */ ((I18nLabel2) => {
   I18nLabel2["Close_Tab"] = "Close";
-  I18nLabel2["Pin_Tab"] = "Active docking";
+  I18nLabel2["Pin_Tab"] = "Enable docking";
   I18nLabel2["Close_Tabset"] = "Close tab set";
   I18nLabel2["Active_Tabset"] = "Active tab set";
   I18nLabel2["Move_Tabset"] = "Move tab set";
@@ -5481,7 +5481,7 @@ const Row = (props) => {
   );
   if (renderPopupBar) {
     return /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", height: "100%" }, children: [
-      /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__POPUP_TABBAR_OUTER, children: /* @__PURE__ */ jsx("div", { children: "Popup" }) }),
+      /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__POPUP_TABBAR_OUTER, children: /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER, children: "Popup" }) }),
       row
     ] });
   }
@@ -5620,7 +5620,11 @@ const Popup = (props) => {
   const { children } = props;
   const rect = props.layoutWindow.rect;
   const { x, y, width, height } = rect;
-  return /* @__PURE__ */ jsx("div", { style: { position: "absolute", top: y, left: x, width, height, zIndex: 9999999 }, children });
+  console.log("x!x!x!");
+  return createPortal(
+    /* @__PURE__ */ jsx("div", { style: { position: "absolute", top: y, left: x, width, height, zIndex: 9999999 }, children }),
+    document.body
+  );
 };
 class Layout extends React.Component {
   // so LayoutInternal knows this is a parent render (used for optimization)
