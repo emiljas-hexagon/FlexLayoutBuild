@@ -252,7 +252,7 @@ __publicField(_DockLocation, "CENTER", new _DockLocation("center", Orientation.V
 let DockLocation = _DockLocation;
 var I18nLabel = /* @__PURE__ */ ((I18nLabel2) => {
   I18nLabel2["Close_Tab"] = "Close";
-  I18nLabel2["Pin_Tab"] = "Enable docking";
+  I18nLabel2["Pin_Tab"] = "Toggle docking";
   I18nLabel2["Close_Tabset"] = "Close tab set";
   I18nLabel2["Active_Tabset"] = "Active tab set";
   I18nLabel2["Move_Tabset"] = "Move tab set";
@@ -518,6 +518,12 @@ const _Actions = class _Actions {
   static createWindow(layout, rect) {
     return new Action(_Actions.CREATE_WINDOW, { layout, rect });
   }
+  static updateWindowRect(windowId, updatedRect) {
+    return new Action(_Actions.UPDATE_WINDOW_RECT, { windowId, ...updatedRect });
+  }
+  static toggleDockingMode(windowId) {
+    return new Action(_Actions.TOGGLE_DOCKING_MODE, { windowId });
+  }
 };
 __publicField(_Actions, "ADD_NODE", "FlexLayout_AddNode");
 __publicField(_Actions, "MOVE_NODE", "FlexLayout_MoveNode");
@@ -535,6 +541,8 @@ __publicField(_Actions, "POPOUT_TAB", "FlexLayout_PopoutTab");
 __publicField(_Actions, "POPOUT_TABSET", "FlexLayout_PopoutTabset");
 __publicField(_Actions, "CLOSE_WINDOW", "FlexLayout_CloseWindow");
 __publicField(_Actions, "CREATE_WINDOW", "FlexLayout_CreateWindow");
+__publicField(_Actions, "UPDATE_WINDOW_RECT", "FlexLayout_UpdateWindowRect");
+__publicField(_Actions, "TOGGLE_DOCKING_MODE", "FlexLayout_ToggleDockingMode");
 let Actions = _Actions;
 class Attribute {
   constructor(name, modelName, defaultValue, alwaysWriteJson) {
@@ -1088,6 +1096,17 @@ const _TabNode = class _TabNode extends Node {
   isPoppedOut() {
     return this.getWindowId() !== Model.MAIN_WINDOW_ID;
   }
+  isPopupRoot() {
+    var _a;
+    const grandparent = (_a = this.parent) == null ? void 0 : _a.getParent();
+    if (!(grandparent instanceof RowNode)) {
+      return false;
+    }
+    if (grandparent.getParent()) {
+      return false;
+    }
+    return grandparent.getChildren().length === 1;
+  }
   isSelected() {
     return this.getParent().getSelectedNode() === this;
   }
@@ -1630,6 +1649,15 @@ const _TabSetNode = class _TabSetNode extends Node {
   }
   isEnableTabScrollbar() {
     return this.getAttr("enableTabScrollbar");
+  }
+  isPopupRoot() {
+    if (!(this.parent instanceof RowNode)) {
+      return false;
+    }
+    if (this.parent.getChildren().length !== 1) {
+      return false;
+    }
+    return !this.parent.getParent();
   }
   getClassNameTabStrip() {
     return this.getAttr("classNameTabStrip");
@@ -2458,6 +2486,7 @@ class LayoutWindow {
   /** @internal */
   set layout(value) {
     this._layout = value;
+    console.trace("set layout", value.getWindowId(), value);
   }
   /** @internal */
   set window(value) {
@@ -2513,6 +2542,7 @@ class LayoutPopup {
     __publicField(this, "_maximizedTabSet");
     __publicField(this, "_activeTabSet");
     __publicField(this, "_toScreenRectFunction");
+    __publicField(this, "_isDockingMode", false);
     this._windowId = windowId;
     this._rect = rect;
     this._toScreenRectFunction = (r) => r;
@@ -2538,6 +2568,9 @@ class LayoutPopup {
   get maximizedTabSet() {
     return this._maximizedTabSet;
   }
+  get isDockingMode() {
+    return this._isDockingMode;
+  }
   get activeTabSet() {
     return this._activeTabSet;
   }
@@ -2560,6 +2593,10 @@ class LayoutPopup {
   /** @internal */
   set maximizedTabSet(value) {
     this._maximizedTabSet = value;
+  }
+  /** @internal */
+  set isDockingMode(value) {
+    this._isDockingMode = value;
   }
   /** @internal */
   set activeTabSet(value) {
@@ -2828,6 +2865,26 @@ const _Model = class _Model {
       case Actions.UPDATE_NODE_ATTRIBUTES: {
         const node = this.idMap.get(action.data.node);
         node.updateAttrs(action.data.json);
+        break;
+      }
+      case Actions.UPDATE_WINDOW_RECT: {
+        const window2 = this.windows.get(action.data.windowId);
+        const { x, y, width, height } = action.data;
+        const newRect = window2.rect.clone();
+        if (x) newRect.x = x;
+        if (y) newRect.y = y;
+        if (width) newRect.width = width;
+        if (height) newRect.height = height;
+        window2.rect = newRect;
+        break;
+      }
+      case Actions.TOGGLE_DOCKING_MODE: {
+        const window2 = this.windows.get(action.data.windowId);
+        if (!(window2 instanceof LayoutPopup)) {
+          console.warn("Warning: TOGGLE_DOCKING_MODE action can only be applied to popup windows");
+          return;
+        }
+        window2.isDockingMode = !window2.isDockingMode;
         break;
       }
     }
@@ -4737,6 +4794,12 @@ const CloseIcon = () => {
 const PinIcon = () => {
   return /* @__PURE__ */ jsx("svg", { xmlns: "http://www.w3.org/2000/svg", style, viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx("path", { stroke: "var(--color-icon)", fill: "var(--color-icon)", d: "M7.881 5.824c0-.456.368-.824.824-.824h6.588a.823.823 0 1 1 0 1.647h-.76l.266 3.451a4.323 4.323 0 0 1 2.012 2.566l.098.345c.072.25.02.515-.134.723a.819.819 0 0 1-.659.327H7.881a.821.821 0 0 1-.79-1.05l.095-.345A4.314 4.314 0 0 1 9.2 10.098l.265-3.45h-.76a.823.823 0 0 1-.823-.824zm3.294 9.47h1.647v2.882a.823.823 0 1 1-1.647 0z" }) });
 };
+const PinDisabledIcon = () => {
+  return /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", style, viewBox: "0 0 24 24", children: [
+    /* @__PURE__ */ jsx("path", { stroke: "var(--color-icon)", fill: "var(--color-icon)", d: "M7.881 5.824c0-.456.368-.824.824-.824h6.588a.824.824 0 1 1 0 1.647h-.76l.266 3.451a4.323 4.323 0 0 1 2.012 2.566l.098.345c.072.25.02.515-.134.723a.819.819 0 0 1-.659.327H7.881a.821.821 0 0 1-.79-1.05l.095-.345A4.314 4.314 0 0 1 9.2 10.098l.265-3.45h-.76a.823.823 0 0 1-.823-.824Zm3.294 9.47h1.647v2.882a.824.824 0 1 1-1.647 0z" }),
+    /* @__PURE__ */ jsx("path", { stroke: "var(--color-icon)", fill: "var(--color-icon)", strokeWidth: "1.5", d: "M 2.9610096,18.959301 21.036427,4.9939416", paintOrder: "markers stroke fill" })
+  ] });
+};
 const MaximizeIcon = () => {
   return /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", style, viewBox: "0 0 24 24", fill: "var(--color-icon)", children: [
     /* @__PURE__ */ jsx("path", { d: "M0 0h24v24H0z", fill: "none" }),
@@ -4812,7 +4875,7 @@ const TabButton = (props) => {
   const selfRef = React.useRef(null);
   const contentRef = React.useRef(null);
   const icons = layout.getIcons();
-  const preventDrag = layout.isPopup();
+  const isPopupMode = layout.isPopup() && node.isPopupRoot() && !layout.isDockingMode();
   React.useLayoutEffect(() => {
     node.setTabRect(layout.getBoundingClientRect(selfRef.current));
     if (layout.getEditingTab() === node) {
@@ -4820,7 +4883,7 @@ const TabButton = (props) => {
     }
   });
   const onDragStart = (event) => {
-    if (preventDrag) return;
+    if (isPopupMode) return;
     if (node.isEnableDrag()) {
       event.stopPropagation();
       layout.setDragNode(event.nativeEvent, node);
@@ -4829,7 +4892,7 @@ const TabButton = (props) => {
     }
   };
   const onDragEnd = (event) => {
-    if (preventDrag) return;
+    if (isPopupMode) return;
     layout.clearDragMain();
   };
   const onAuxMouseClick = (event) => {
@@ -4942,6 +5005,12 @@ const TabButton = (props) => {
       )
     );
   }
+  const movableEventsListeners = {};
+  if (isPopupMode) {
+    movableEventsListeners.onPointerDown = layout.onMoveStart;
+    movableEventsListeners.onPointerMove = layout.onMove;
+    movableEventsListeners.onPointerUp = layout.onMoveEnd;
+  }
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -4956,6 +5025,7 @@ const TabButton = (props) => {
       onDragStart,
       onDragEnd,
       onDoubleClick,
+      ...movableEventsListeners,
       children: [
         leading,
         content,
@@ -4975,6 +5045,7 @@ const TabSet = (props) => {
   const stickyButtonsRef = React.useRef(null);
   const timer = React.useRef(void 0);
   const icons = layout.getIcons();
+  const isPopupMode = layout.isPopup() && node.isPopupRoot() && !layout.isDockingMode();
   React.useLayoutEffect(() => {
     node.setRect(layout.getBoundingClientRect(selfRef.current));
     if (tabStripRef.current) {
@@ -5028,7 +5099,7 @@ const TabSet = (props) => {
     userControlledPositionRef.current = false;
   };
   const onDragStart = (event) => {
-    if (layout.isPopup()) return;
+    if (isPopupMode) return;
     if (!layout.getEditingTab()) {
       if (node.isEnableDrag()) {
         event.stopPropagation();
@@ -5080,6 +5151,9 @@ const TabSet = (props) => {
     if (node.canMaximize()) {
       layout.maximize(node);
     }
+  };
+  const onToggleDockingMode = (event) => {
+    layout.doAction(Actions.toggleDockingMode(layout.getWindowId()));
   };
   const cm = layout.getClassName;
   const selectedTabNode = node.getSelectedNode();
@@ -5175,19 +5249,35 @@ const TabSet = (props) => {
     }
   }
   if (layout.isPopup()) {
+    const window2 = layout.getModel().getwindowsMap().get(layout.getWindowId());
     const pinTitle = layout.i18nName(I18nLabel.Pin_Tab);
-    buttons.push(
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          "data-layout-path": path + "/button/pin",
-          title: pinTitle,
-          onClick: onClose,
-          children: typeof icons.pin === "function" ? icons.pin(node) : icons.pin
-        },
-        "pin"
-      )
-    );
+    if (window2.isDockingMode) {
+      buttons.push(
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            "data-layout-path": path + "/button/pin",
+            title: pinTitle,
+            onClick: onToggleDockingMode,
+            children: typeof icons.pin === "function" ? icons.pin(node) : icons.pin
+          },
+          "pin"
+        )
+      );
+    } else {
+      buttons.push(
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            "data-layout-path": path + "/button/pin-disabled",
+            title: pinTitle,
+            onClick: onToggleDockingMode,
+            children: typeof icons.pinDisabled === "function" ? icons.pinDisabled(node) : icons.pinDisabled
+          },
+          "pin-disabled"
+        )
+      );
+    }
   }
   if (selectedTabNode !== void 0 && layout.isSupportsPopout() && selectedTabNode.isEnablePopout() && selectedTabNode.isEnablePopoutIcon()) {
     const popoutTitle = layout.i18nName(I18nLabel.Popout_Tab);
@@ -5329,6 +5419,12 @@ const TabSet = (props) => {
           }
         );
       }
+      const movableEventsListeners = {};
+      if (isPopupMode) {
+        movableEventsListeners.onPointerDown = layout.onMoveStart;
+        movableEventsListeners.onPointerMove = layout.onMove;
+        movableEventsListeners.onPointerUp = layout.onMoveEnd;
+      }
       tabStrip = /* @__PURE__ */ jsxs(
         "div",
         {
@@ -5353,6 +5449,7 @@ const TabSet = (props) => {
                   className: cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()),
                   style: { overflowX: "auto", overflowY: "hidden" },
                   onScroll,
+                  ...movableEventsListeners,
                   children: /* @__PURE__ */ jsx(
                     "div",
                     {
@@ -5480,8 +5577,17 @@ const Row = (props) => {
     }
   );
   if (renderPopupBar) {
-    return /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", height: "100%" }, children: [
-      /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__POPUP_TABBAR_OUTER, children: /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER, children: "Popup" }) }),
+    return /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", width: "100%", height: "100%" }, children: [
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: CLASSES.FLEXLAYOUT__POPUP_TABBAR_OUTER,
+          onPointerDown: layout.onMoveStart,
+          onPointerMove: layout.onMove,
+          onPointerUp: layout.onMoveEnd,
+          children: /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER, children: "Popup" })
+        }
+      ),
       row
     ] });
   }
@@ -5620,7 +5726,6 @@ const Popup = (props) => {
   const { children } = props;
   const rect = props.layoutWindow.rect;
   const { x, y, width, height } = rect;
-  console.log("x!x!x!");
   return createPortal(
     /* @__PURE__ */ jsx("div", { style: { position: "absolute", top: y, left: x, width, height, zIndex: 9999999 }, children }),
     document.body
@@ -5720,6 +5825,19 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
     __publicField(this, "resizeObserver");
     __publicField(this, "dragEnterCount", 0);
     __publicField(this, "dragging", false);
+    __publicField(this, "moving", false);
+    __publicField(this, "moveStartX", 0);
+    __publicField(this, "moveStartY", 0);
+    __publicField(this, "moveInitialLeft", 0);
+    __publicField(this, "moveInitialTop", 0);
+    __publicField(this, "resizeSide", null);
+    __publicField(this, "resizing", false);
+    __publicField(this, "resizeStartX", 0);
+    __publicField(this, "resizeStartY", 0);
+    __publicField(this, "resizeStartWidth", 0);
+    __publicField(this, "resizeStartHeight", 0);
+    __publicField(this, "resizeStartTop", 0);
+    __publicField(this, "resizeStartLeft", 0);
     __publicField(this, "windowId");
     __publicField(this, "layoutWindow");
     __publicField(this, "mainLayout");
@@ -5921,6 +6039,110 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
       }
       this.dragEnterCount = 0;
     });
+    // *************************** End Drag Drop *************************************
+    __publicField(this, "onMoveStart", (event) => {
+      const movableDiv = event.currentTarget;
+      if (!movableDiv.contains(event.target)) return;
+      event.preventDefault();
+      this.moving = true;
+      const { rect } = this.layoutWindow;
+      this.moveStartX = event.clientX;
+      this.moveStartY = event.clientY;
+      this.moveInitialLeft = rect.x;
+      this.moveInitialTop = rect.y;
+    });
+    __publicField(this, "onMove", (event) => {
+      if (!this.moving) return;
+      const movableDiv = event.currentTarget;
+      movableDiv.setPointerCapture(event.pointerId);
+      const deltaX = event.clientX - this.moveStartX;
+      const deltaY = event.clientY - this.moveStartY;
+      this.doAction(Actions.updateWindowRect(this.windowId, {
+        x: this.moveInitialLeft + deltaX,
+        y: this.moveInitialTop + deltaY
+      }));
+    });
+    __publicField(this, "onMoveEnd", (event) => {
+      const movableDiv = event.currentTarget;
+      this.moving = false;
+      movableDiv.releasePointerCapture(event.pointerId);
+    });
+    __publicField(this, "onResizeStart", (event) => {
+      const resizable = event.currentTarget;
+      const rect = resizable.getBoundingClientRect();
+      const borderSize = 2;
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      if (mouseX < borderSize) {
+        this.resizeSide = "left";
+      } else if (mouseX > rect.width - borderSize) {
+        this.resizeSide = "right";
+      } else if (mouseY < borderSize) {
+        this.resizeSide = "top";
+      } else if (mouseY > rect.height - borderSize) {
+        this.resizeSide = "bottom";
+      }
+      if (this.resizeSide) {
+        event.preventDefault();
+        event.stopPropagation();
+        resizable.setPointerCapture(event.pointerId);
+        this.resizing = true;
+        this.resizeStartX = event.clientX;
+        this.resizeStartY = event.clientY;
+        const style2 = window.getComputedStyle(resizable);
+        this.resizeStartWidth = parseInt(style2.width);
+        this.resizeStartHeight = parseInt(style2.height);
+        this.resizeStartTop = parseInt(style2.top) || 0;
+        this.resizeStartLeft = parseInt(style2.left) || 0;
+      }
+    });
+    __publicField(this, "onResize", (event) => {
+      const resizable = event.currentTarget;
+      const rect = resizable.getBoundingClientRect();
+      const borderSize = 2;
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      let newCursor = "default";
+      if (mouseX < borderSize || mouseX > rect.width - borderSize) {
+        newCursor = "ew-resize";
+      }
+      if (mouseY < borderSize || mouseY > rect.height - borderSize) {
+        newCursor = "ns-resize";
+      }
+      resizable.style.cursor = newCursor;
+      if (this.resizing) {
+        const dx = event.clientX - this.resizeStartX;
+        const dy = event.clientY - this.resizeStartY;
+        switch (this.resizeSide) {
+          case "right":
+            this.doAction(Actions.updateWindowRect(this.windowId, {
+              width: this.resizeStartWidth + dx
+            }));
+            break;
+          case "left":
+            this.doAction(Actions.updateWindowRect(this.windowId, {
+              x: this.resizeStartLeft + dx,
+              width: this.resizeStartWidth - dx
+            }));
+            break;
+          case "bottom":
+            this.doAction(Actions.updateWindowRect(this.windowId, {
+              height: this.resizeStartHeight + dy
+            }));
+            break;
+          case "top":
+            this.doAction(Actions.updateWindowRect(this.windowId, {
+              y: this.resizeStartTop + dy,
+              height: this.resizeStartHeight - dy
+            }));
+            break;
+        }
+      }
+    });
+    __publicField(this, "onResizeEnd", (event) => {
+      this.resizing = false;
+      this.resizeSide = null;
+    });
     this.orderedTabIds = [];
     this.orderedTabMoveableIds = [];
     this.selfRef = React.createRef();
@@ -6019,6 +6241,12 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
     (_b = this.styleObserver) == null ? void 0 : _b.disconnect();
   }
   render() {
+    const resizeEventsListeners = {};
+    if (this.isPopup()) {
+      resizeEventsListeners.onPointerDown = this.onResizeStart;
+      resizeEventsListeners.onPointerMove = this.onResize;
+      resizeEventsListeners.onPointerUp = this.onResizeEnd;
+    }
     if (!this.selfRef.current) {
       return /* @__PURE__ */ jsxs("div", { ref: this.selfRef, className: this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT), children: [
         /* @__PURE__ */ jsx("div", { ref: this.moveablesRef, className: this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES) }, "__moveables__"),
@@ -6053,6 +6281,7 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
         onDragLeave: this.onDragLeaveRaw,
         onDragOver: this.onDragOver,
         onDrop: this.onDrop,
+        ...resizeEventsListeners,
         children: [
           /* @__PURE__ */ jsx("div", { ref: this.moveablesRef, className: this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES) }, "__moveables__"),
           metricElements,
@@ -6062,7 +6291,11 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
           reorderedTabMoveables,
           tabStamps,
           this.state.portal,
-          floatingWindows
+          floatingWindows,
+          /* @__PURE__ */ jsx("span", { style: { position: "absolute", height: "2px", width: "100%", bottom: "0px", left: "0px" } }),
+          /* @__PURE__ */ jsx("span", { style: { position: "absolute", height: "2px", width: "100%", top: "0px", left: "0px" } }),
+          /* @__PURE__ */ jsx("span", { style: { position: "absolute", height: "100%", width: "2px", right: "0px", top: "0px" } }),
+          /* @__PURE__ */ jsx("span", { style: { position: "absolute", height: "100%", width: "2px", left: "0px", top: "0px" } })
         ]
       }
     );
@@ -6530,12 +6763,19 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
   isPopup() {
     return this.layoutWindow instanceof LayoutPopup;
   }
+  isDockingMode() {
+    if (!(this.layoutWindow instanceof LayoutPopup)) {
+      return true;
+    }
+    return this.layoutWindow.isDockingMode;
+  }
   clearDragMain() {
     _LayoutInternal.dragState = void 0;
     if (this.windowId === Model.MAIN_WINDOW_ID) {
       this.isDraggingOverWindow = false;
     }
     for (const [, layoutWindow] of this.props.model.getwindowsMap()) {
+      console.log("clearDragMain", layoutWindow, layoutWindow == null ? void 0 : layoutWindow.layout);
       layoutWindow.layout.clearDragLocal();
     }
   }
@@ -6549,7 +6789,6 @@ const _LayoutInternal = class _LayoutInternal extends React.Component {
       this.outlineDiv = void 0;
     }
   }
-  // *************************** End Drag Drop *************************************
 };
 __publicField(_LayoutInternal, "dragState");
 let LayoutInternal = _LayoutInternal;
@@ -6557,6 +6796,7 @@ const FlexLayoutVersion = "0.8.17";
 const defaultIcons = {
   close: /* @__PURE__ */ jsx(CloseIcon, {}),
   pin: /* @__PURE__ */ jsx(PinIcon, {}),
+  pinDisabled: /* @__PURE__ */ jsx(PinDisabledIcon, {}),
   closeTabset: /* @__PURE__ */ jsx(CloseIcon, {}),
   popout: /* @__PURE__ */ jsx(PopoutIcon, {}),
   maximize: /* @__PURE__ */ jsx(MaximizeIcon, {}),
@@ -6608,6 +6848,7 @@ export {
   Node,
   Orientation,
   OverflowIcon,
+  PinDisabledIcon,
   PinIcon,
   PopoutIcon,
   Rect,

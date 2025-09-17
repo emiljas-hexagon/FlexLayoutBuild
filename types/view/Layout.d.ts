@@ -149,6 +149,19 @@ export declare class LayoutInternal extends React.Component<ILayoutInternalProps
     private resizeObserver?;
     private dragEnterCount;
     private dragging;
+    private moving;
+    private moveStartX;
+    private moveStartY;
+    private moveInitialLeft;
+    private moveInitialTop;
+    private resizeSide;
+    private resizing;
+    private resizeStartX;
+    private resizeStartY;
+    private resizeStartWidth;
+    private resizeStartHeight;
+    private resizeStartTop;
+    private resizeStartLeft;
     private windowId;
     private layoutWindow;
     private mainLayout;
@@ -218,6 +231,7 @@ export declare class LayoutInternal extends React.Component<ILayoutInternalProps
     setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number): void;
     setDraggingOverWindow(overWindow: boolean): void;
     isPopup(): boolean;
+    isDockingMode(): boolean;
     onDragEnterRaw: (event: React.DragEvent<HTMLElement>) => void;
     onDragLeaveRaw: (event: React.DragEvent<HTMLElement>) => void;
     clearDragMain(): void;
@@ -226,6 +240,12 @@ export declare class LayoutInternal extends React.Component<ILayoutInternalProps
     onDragOver: (event: React.DragEvent<HTMLElement>) => void;
     onDragLeave: (event: React.DragEvent<HTMLElement>) => void;
     onDrop: (event: React.DragEvent<HTMLElement>) => void;
+    onMoveStart: (event: React.PointerEvent<HTMLElement>) => void;
+    onMove: (event: React.PointerEvent<HTMLElement>) => void;
+    onMoveEnd: (event: React.PointerEvent<HTMLElement>) => void;
+    onResizeStart: (event: React.PointerEvent<HTMLElement>) => void;
+    onResize: (event: React.PointerEvent<HTMLElement>) => void;
+    onResizeEnd: (event: React.PointerEvent<HTMLElement>) => void;
 }
 export declare const FlexLayoutVersion: string;
 export type DragRectRenderCallback = (content: React.ReactNode | undefined, node?: Node, json?: IJsonTabNode) => React.ReactNode | undefined;
@@ -261,6 +281,7 @@ export interface ITabRenderValues {
 export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     pin?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
+    pinDisabled?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));

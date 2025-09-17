@@ -47,6 +47,7 @@ export declare class TabNode extends Node implements IDraggable {
      */
     getExtraData(): Record<string, any>;
     isPoppedOut(): boolean;
+    isPopupRoot(): boolean;
     isSelected(): boolean;
     getIcon(): string | undefined;
     isEnableClose(): boolean;

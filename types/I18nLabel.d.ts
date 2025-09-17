@@ -1,6 +1,6 @@
 export declare enum I18nLabel {
     Close_Tab = "Close",
-    Pin_Tab = "Active docking",
+    Pin_Tab = "Toggle docking",
     Close_Tabset = "Close tab set",
     Active_Tabset = "Active tab set",
     Move_Tabset = "Move tab set",

@@ -69,6 +69,7 @@ export declare class TabSetNode extends Node implements IDraggable, IDropTarget 
     isEnableTabStrip(): boolean;
     isAutoSelectTab(): boolean;
     isEnableTabScrollbar(): boolean;
+    isPopupRoot(): boolean;
     getClassNameTabStrip(): string | undefined;
     getTabLocation(): string;
     toJson(): IJsonTabSetNode;

@@ -21,6 +21,8 @@ export declare class Actions {
     static POPOUT_TABSET: string;
     static CLOSE_WINDOW: string;
     static CREATE_WINDOW: string;
+    static UPDATE_WINDOW_RECT: string;
+    static TOGGLE_DOCKING_MODE: string;
     /**
      * Adds a tab node to the given tabset node
      * @param json the json for the new tab node e.g {type:"tab", component:"table"}
@@ -124,4 +126,11 @@ export declare class Actions {
      * @returns
      */
     static createWindow(layout: IJsonRowNode, rect: IJsonRect): Action;
+    static updateWindowRect(windowId: string, updatedRect: {
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+    }): Action;
+    static toggleDockingMode(windowId: string): Action;
 }
