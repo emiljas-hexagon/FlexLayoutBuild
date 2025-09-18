@@ -359,6 +359,7 @@ var CLASSES = /* @__PURE__ */ ((CLASSES2) => {
   CLASSES2["FLEXLAYOUT__POPUP_MENU"] = "flexlayout__popup_menu";
   CLASSES2["FLEXLAYOUT__MINI_SCROLLBAR"] = "flexlayout__mini_scrollbar";
   CLASSES2["FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER"] = "flexlayout__mini_scrollbar_container";
+  CLASSES2["FLEXLAYOUT__POPUP"] = "flexlayout__popup";
   CLASSES2["FLEXLAYOUT__POPUP_TABBAR_OUTER"] = "flexlayout__popup_tabbar_outer";
   return CLASSES2;
 })(CLASSES || {});
@@ -5727,7 +5728,7 @@ const Popup = (props) => {
   const rect = props.layoutWindow.rect;
   const { x, y, width, height } = rect;
   return createPortal(
-    /* @__PURE__ */ jsx("div", { style: { position: "absolute", top: y, left: x, width, height, zIndex: 9999999 }, children }),
+    /* @__PURE__ */ jsx("div", { className: CLASSES.FLEXLAYOUT__POPUP, style: { position: "absolute", top: y, left: x, width, height, zIndex: 9999999 }, children }),
     document.body
   );
 };
