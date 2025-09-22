@@ -1,6 +1,6 @@
 export declare const CloseIcon: () => import("react/jsx-runtime").JSX.Element;
-export declare const PinIcon: () => import("react/jsx-runtime").JSX.Element;
-export declare const PinDisabledIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const FloatingIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const DockableIcon: () => import("react/jsx-runtime").JSX.Element;
 export declare const MaximizeIcon: () => import("react/jsx-runtime").JSX.Element;
 export declare const OverflowIcon: () => import("react/jsx-runtime").JSX.Element;
 export declare const EdgeIcon: () => import("react/jsx-runtime").JSX.Element;

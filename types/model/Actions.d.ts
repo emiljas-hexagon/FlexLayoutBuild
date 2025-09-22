@@ -23,6 +23,7 @@ export declare class Actions {
     static CREATE_WINDOW: string;
     static UPDATE_WINDOW_RECT: string;
     static TOGGLE_DOCKING_MODE: string;
+    static BRING_TO_FRONT: string;
     /**
      * Adds a tab node to the given tabset node
      * @param json the json for the new tab node e.g {type:"tab", component:"table"}
@@ -133,4 +134,5 @@ export declare class Actions {
         height?: number;
     }): Action;
     static toggleDockingMode(windowId: string): Action;
+    static bringToFront(windowId: string): Action;
 }

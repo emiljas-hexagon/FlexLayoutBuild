@@ -69,6 +69,7 @@ export declare class Model {
      */
     getBorderSet(): BorderSet;
     getwindowsMap(): Map<string, LayoutWindow | LayoutPopup>;
+    getWindowOrderNumber(windowId: string): number;
     /**
      * Visits all the nodes in the model and calls the given function for each
      * @param fn a function that takes visited node and a integer level as parameters

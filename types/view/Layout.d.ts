@@ -245,6 +245,8 @@ export declare class LayoutInternal extends React.Component<ILayoutInternalProps
     onMoveEnd: (event: React.PointerEvent<HTMLElement>) => void;
     onResizeStart: (event: React.PointerEvent<HTMLElement>) => void;
     onResize: (event: React.PointerEvent<HTMLElement>) => void;
+    private getCursorForSide;
+    getResizeSide(resizable: HTMLElement, event: React.PointerEvent<HTMLElement>): "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right" | null;
     onResizeEnd: (event: React.PointerEvent<HTMLElement>) => void;
 }
 export declare const FlexLayoutVersion: string;
@@ -280,8 +282,8 @@ export interface ITabRenderValues {
 }
 export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    pin?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
-    pinDisabled?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
+    floating?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
+    dockable?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
