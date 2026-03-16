@@ -6916,6 +6916,7 @@ export {
   ICloseType,
   Layout,
   LayoutInternal,
+  LayoutPopup,
   LayoutWindow,
   MaximizeIcon,
   MenuIcon,
